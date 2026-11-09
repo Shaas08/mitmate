@@ -1,0 +1,17 @@
+project_id = "mitmate"
+
+[api]
+port = 54321
+
+[db]
+port = 54322
+major_version = 15
+
+[auth]
+site_url = "io.mitmate.app://login-callback"
+additional_redirect_urls = ["io.mitmate.app://login-callback"]
+enable_signup = true
+minimum_password_length = 10
+
+[auth.email]
+enable_confirmations = true

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flatmate questionnaire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:wght@600;700&display=swap">
+<style>
+/* Layout idea: one calm reading column, one card per topic, large open text boxes, a sticky progress bar. */
+:root {
+  --bg: #f3f5f7;
+  --surface: #ffffff;
+  --ink: #18232b;
+  --muted: #5b6b76;
+  --line: #d5dde3;
+  --accent: #0f6b6a;
+  --accent-ink: #ffffff;
+  --accent-soft: #dcefee;
+  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11191e;
+    --surface: #182229;
+    --ink: #e7eef2;
+    --muted: #9bb0bc;
+    --line: #2a3943;
+    --accent: #4cc3bf;
+    --accent-ink: #06201f;
+    --accent-soft: #17353a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11191e;
+  --surface: #182229;
+  --ink: #e7eef2;
+  --muted: #9bb0bc;
+  --line: #2a3943;
+  --accent: #4cc3bf;
+  --accent-ink: #06201f;
+  --accent-soft: #17353a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.55;
+}
+.wrap { max-width: 720px; margin: 0 auto; padding: 0 16px 64px; }
+
+.bar {
+  position: sticky; top: 0; z-index: 5;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.bar-inner {
+  max-width: 720px; margin: 0 auto; padding: 10px 16px 8px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  font-size: 15px; color: var(--muted);
+}
+.bar-inner a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.bar-inner a:hover { text-decoration: underline; }
+.meter { height: 3px; background: var(--line); }
+.meter > span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s ease; }
+
+header { padding: 40px 0 8px; }
+h1 {
+  font-family: var(--font-display);
+  font-size: clamp(30px, 6vw, 40px);
+  line-height: 1.15;
+  margin: 0 0 12px;
+  text-wrap: balance;
+}
+.lede { margin: 0; color: var(--muted); max-width: 62ch; }
+
+.note {
+  margin: 24px 0;
+  padding: 16px 18px;
+  background: var(--accent-soft);
+  border-left: 4px solid var(--accent);
+  border-radius: 6px;
+}
+.note p { margin: 0 0 8px; }
+.note p:last-child { margin: 0; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 24px 20px 8px;
+  margin: 20px 0;
+}
+.card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.num {
+  flex: none; width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--accent); color: var(--accent-ink);
+  font-weight: 600; font-size: 15px;
+}
+h2 { font-family: var(--font-display); font-size: 24px; line-height: 1.2; margin: 0; text-wrap: balance; }
+.intro { margin: 4px 0 8px; color: var(--muted); max-width: 62ch; }
+
+.q { margin: 0 0 22px; }
+.q label { display: flex; gap: 10px; margin-bottom: 8px; font-weight: 600; }
+.qn { flex: none; min-width: 2.2em; color: var(--accent); font-variant-numeric: tabular-nums; }
+.qt strong { font-weight: 600; }
+
+textarea, input[type="text"] {
+  display: block; width: 100%;
+  font: inherit; color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+textarea { min-height: 96px; resize: vertical; line-height: 1.5; overflow: hidden; }
+textarea:focus-visible, input:focus-visible, button:focus-visible, summary:focus-visible, a:focus-visible {
+  outline: 3px solid var(--accent); outline-offset: 2px;
+}
+
+.about-grid { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; margin-bottom: 16px; }
+.about-grid label, .field-label { display: block; font-weight: 600; margin-bottom: 6px; }
+.checks { display: grid; gap: 10px; margin: 4px 0 18px; }
+.check { display: flex; align-items: flex-start; gap: 10px; }
+.check input { width: 20px; height: 20px; margin-top: 3px; accent-color: var(--accent); flex: none; }
+.optional { color: var(--muted); font-weight: 400; }
+
+.send { padding-bottom: 24px; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+button {
+  font: inherit; font-weight: 600; cursor: pointer;
+  border-radius: 8px; padding: 11px 18px;
+  border: 1px solid var(--accent);
+  background: var(--accent); color: var(--accent-ink);
+}
+button.secondary { background: transparent; color: var(--accent); }
+button.quiet { background: transparent; color: var(--muted); border-color: var(--line); }
+button[hidden] { display: none; }
+.status { min-height: 1.6em; margin: 0 0 12px; color: var(--accent); font-weight: 600; }
+details { margin-top: 8px; }
+summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+#preview { min-height: 220px; margin-top: 12px; overflow: auto; font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 14px; }
+
+@media (max-width: 520px) {
+  .about-grid { grid-template-columns: 1fr; }
+  .card { padding: 20px 14px 4px; }
+  body { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .meter > span { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="bar" role="region" aria-label="Progress">
+  <div class="bar-inner">
+    <span id="progress-text" aria-live="polite">0 of 0 answered</span>
+    <span id="save-state"></span>
+    <a href="#send">Send answers</a>
+  </div>
+  <div class="meter" aria-hidden="true"><span id="meter-fill"></span></div>
+</div>
+
+<div class="wrap">
+  <header>
+    <h1>Living with flatmates</h1>
+    <p class="lede">A questionnaire about finding, choosing and living with flatmates in Germany. Your experience helps us understand what really goes wrong and what would help.</p>
+  </header>
+
+  <div class="note">
+    <p><strong>Every question is optional.</strong> Skip anything you like, and write as much or as little as you want. The boxes have no length limit.</p>
+    <p><strong>Prefer to talk?</strong> Tap the microphone key on your phone keyboard and speak your answer. On Windows press the Windows key + H, and on a Mac turn on Dictation in System Settings under Keyboard. Your words appear in the box, in German or English.</p>
+    <p>You can stop and come back later. Your answers are saved in this browser, and they stay on your device until you choose to copy or save them and send them to the person who shared this form.</p>
+  </div>
+
+  <section class="card" aria-labelledby="h-about">
+    <div class="card-head"><h2 id="h-about">About you <span class="optional">(optional)</span></h2></div>
+    <div class="about-grid">
+      <div>
+        <label for="about-name">Name or nickname</label>
+        <input type="text" id="about-name" autocomplete="name">
+      </div>
+      <div>
+        <label for="about-city">City</label>
+        <input type="text" id="about-city" autocomplete="address-level2">
+      </div>
+    </div>
+    <p class="field-label" id="roles-label">Which of these have you done?</p>
+    <div class="checks" role="group" aria-labelledby="roles-label">
+      <label class="check"><input type="checkbox" id="about-looked"> I looked for a room in a shared flat</label>
+      <label class="check"><input type="checkbox" id="about-chose"> I chose a new flatmate for a flat I already lived in</label>
+    </div>
+    <div style="margin-bottom:24px">
+      <label class="field-label" for="about-contact">Email or phone <span class="optional">(only if you are happy to be contacted)</span></label>
+      <input type="text" id="about-contact" autocomplete="email">
+      <label class="check" style="margin-top:12px"><input type="checkbox" id="about-ok"> You may contact me later to show me a prototype</label>
+    </div>
+  </section>
+
+  <div id="sections"></div>
+
+  <section class="card send" id="send" aria-labelledby="h-send">
+    <div class="card-head"><h2 id="h-send">Send your answers</h2></div>
+    <p class="intro">Thank you. Copy your answers and send them to the person who shared this form with you, for example in a message or an email.</p>
+    <div class="actions">
+      <button type="button" id="btn-copy">Copy my answers</button>
+      <button type="button" id="btn-save" class="secondary" hidden>Save as a file</button>
+      <button type="button" id="btn-clear" class="quiet">Clear all answers</button>
+    </div>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+    <details id="preview-details">
+      <summary>Show my answers as text</summary>
+      <label for="preview" class="field-label" style="margin-top:12px">Your answers, ready to copy</label>
+      <textarea id="preview" readonly></textarea>
+    </details>
+  </section>
+</div>
+
+<script>
+(function () {
+  var TITLE = "Living with flatmates: my answers";
+  var KEY = "flatmate-questionnaire-v1";
+
+  var SECTIONS = [
+    { id: "flat", title: "Your flat", questions: [
+      { id: "flat1", text: "Tell us about your flat: who lives there, how long you have lived there, and how you ended up there." },
+      { id: "flat2", text: "Is it a shared flat with one main tenant, a sublet, or something else? How does that work for you?" },
+      { id: "flat3", text: "Why did you start looking for a flatmate or a room?" },
+      { id: "flat4", text: "How do you spend your time at home? For example studying, working from home, going out, early or late hours." }
+    ]},
+    { id: "find", title: "Finding people", questions: [
+      { id: "find1", text: "Where did you search or post, for example WG-Gesucht, friends or social groups? What worked and what did not?" },
+      { id: "find2", text: "How many people got in touch, and how did you sort them?" },
+      { id: "find3", text: "What did you write in your ad or profile, and what did you leave out?" },
+      { id: "find4", text: "What did you want to know about a person that no ad could tell you?" },
+      { id: "find5", text: "Did you ever worry about fake profiles or your safety while searching? What happened?" },
+      { id: "find6", text: "How long did the search take, and how did it feel?" }
+    ]},
+    { id: "choose", title: "Choosing one person", questions: [
+      { id: "choose1", text: "How did you decide whom to meet? What made you say yes or no to someone?" },
+      { id: "choose2", text: "What did the first meeting or viewing look like? What did you ask, and what do you wish you had asked?" },
+      { id: "choose3", text: "Did your other flatmates take part in the decision? How did you agree?" },
+      { id: "choose4", text: "Would comparing candidates side by side have helped? On which points?" },
+      { id: "choose5", text: "Did you ever turn someone down, or get turned down? How was it done, and how did it feel?" },
+      { id: "choose6", text: "Looking back, what did you miss when you made your choice?" }
+    ]},
+    { id: "agree", title: "Agreeing the rules", questions: [
+      { id: "agree1", text: "Before the new person moved in, what did you agree on? For example rent, deposit, house rules, guests, cleaning, quiet hours." },
+      { id: "agree2", text: "Was anything written down? Where, and did anyone look at it later?" },
+      { id: "agree3", text: "Did the landlord or main tenant have to agree to the new flatmate? How did that go?" },
+      { id: "agree4", text: "What did you assume without saying it out loud, and it later caused trouble?" },
+      { id: "agree5", text: "Who decided the rules, and did everyone feel heard?" },
+      { id: "agree6", text: "Which rule would you want in place from day one?" }
+    ]},
+    { id: "live", title: "Living together", intro: "Where you can, describe a recent real example.", questions: [
+      { id: "live1", topic: "Rent and bills.", text: "How do you split rent and bills? Who chases late payments, and how does that feel?" },
+      { id: "live2", topic: "Groceries and food.", text: "Do you buy and cook together or separately? Who decides, and what causes friction?" },
+      { id: "live3", topic: "Cleaning and chores.", text: "Who cleans what? How do you decide turns, and what happens when someone skips?" },
+      { id: "live4", topic: "Guests and partners.", text: "How do you ask before bringing friends or a partner home? What is too much, and what annoys you?" },
+      { id: "live5", topic: "Noise and sleep.", text: "When is it quiet? Who works from home, and who sleeps early or late?" },
+      { id: "live6", topic: "Smoking, drinking and parties.", text: "What are the house habits? Did anyone's habits clash with yours?" },
+      { id: "live7", topic: "Shared spaces and belongings.", text: "What is shared and what is private? Has anything gone missing or been used without asking?" },
+      { id: "live8", topic: "Talking about problems.", text: "When something bothers you, how do you raise it: in person, in a chat, or not at all?" }
+    ]},
+    { id: "wrong", title: "When it went wrong", intro: "Pick one real situation and tell it step by step. This is the most useful part for us.", questions: [
+      { id: "wrong1", text: "Tell us about a moment when things went wrong with a flatmate. What happened first?" },
+      { id: "wrong2", text: "Who was involved, and what did each person do next?" },
+      { id: "wrong3", text: "How did you talk about it: in person, in a group chat, or not at all?" },
+      { id: "wrong4", text: "How long did it take to settle, and did anyone move out?" },
+      { id: "wrong5", text: "What was the real cause: a habit, money, a missing rule, or a misunderstanding?" },
+      { id: "wrong6", text: "What could have prevented it, before or after the move-in?" },
+      { id: "wrong7", text: "What one thing would you have wanted at that moment, such as a rule, a reminder, or a way to say it kindly?" }
+    ]},
+    { id: "safety", title: "Safety and comfort", intro: "These topics are personal. Share only what you are comfortable with, and skip anything you like.", questions: [
+      { id: "safety1", text: "Did you feel more comfortable living with some kinds of people than others? How did that affect your search?" },
+      { id: "safety2", text: "Have you ever felt unsafe or uncomfortable in a flat or with a candidate? What would have helped?" },
+      { id: "safety3", text: "Which details on a profile would you keep private, and which would you share?" },
+      { id: "safety4", text: "What would make you trust a stranger's profile: an ID check, a photo, a reference, a video call?" },
+      { id: "safety5", text: "If a match became uncomfortable, what would you want to be able to do: reject, block, leave the chat, report?" },
+      { id: "safety6", text: "Would you want to choose who can see your profile, for example only women or only certain people? Why?" }
+    ]},
+    { id: "idea", title: "An idea", intro: "Imagine an app for flatmates with four steps. Match: it suggests people who fit your habits and preferences, and both sides must say yes. Choose: you shortlist, compare, chat, meet and confirm one person. Agree: you both accept shared house rules, rent and chore arrangements before moving in. Live: it helps with rent and grocery splits, a cleaning rota, and asking before guests come over.", questions: [
+      { id: "idea1", text: "What is your first reaction? What do you like, and what do you doubt?" },
+      { id: "idea2", text: "Which of the four steps would you use first, and which would you skip?" },
+      { id: "idea3", text: "Which feature would have helped you most? For example preference matching, side-by-side comparison, shared house rules, guest requests, rent and grocery splits, or the chore rota." },
+      { id: "idea4", text: "What would make you trust the app? What would make you delete it?" },
+      { id: "idea5", text: "What is missing?" },
+      { id: "idea6", text: "Would you use it in German, in English, or in both?" },
+      { id: "idea7", text: "What, if anything, would feel fair to pay for?" }
+    ]},
+    { id: "end", title: "Last words", questions: [
+      { id: "end1", text: "Is there anything we did not ask that matters?" },
+      { id: "end2", text: "If you could change one thing about how people find flatmates, what would it be?" }
+    ]}
+  ];
+
+  var ABOUT_FIELDS = [
+    { id: "about-name", key: "name", type: "text" },
+    { id: "about-city", key: "city", type: "text" },
+    { id: "about-looked", key: "looked", type: "check" },
+    { id: "about-chose", key: "chose", type: "check" },
+    { id: "about-contact", key: "contact", type: "text" },
+    { id: "about-ok", key: "ok", type: "check" }
+  ];
+
+  var total = 0;
+  SECTIONS.forEach(function (s) { total += s.questions.length; });
+
+  function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function $(id) { return document.getElementById(id); }
+
+  var state = { about: {}, a: {} };
+  var storageOk = true;
+  try {
+    var raw = window.localStorage.getItem(KEY);
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        state.about = parsed.about || {};
+        state.a = parsed.a || {};
+      }
+    }
+  } catch (e) { storageOk = false; }
+
+  var saveTimer = null;
+  function persist() {
+    try {
+      window.localStorage.setItem(KEY, JSON.stringify(state));
+      storageOk = true;
+    } catch (e) { storageOk = false; }
+    showSaveState();
+  }
+  function schedulePersist() {
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(persist, 400);
+  }
+  function showSaveState() {
+    $("save-state").textContent = storageOk ? "Saved in this browser" : "Not saved here: copy your answers before you leave";
+  }
+
+  function autoGrow(el) {
+    el.style.height = "auto";
+    el.style.height = (el.scrollHeight + 2) + "px";
+  }
+
+  function render() {
+    var html = "";
+    SECTIONS.forEach(function (s, si) {
+      html += '<section class="card" aria-labelledby="h-' + s.id + '">';
+      html += '<div class="card-head"><span class="num" aria-hidden="true">' + (si + 1) + '</span><h2 id="h-' + s.id + '">' + esc(s.title) + '</h2></div>';
+      if (s.intro) html += '<p class="intro">' + esc(s.intro) + '</p>';
+      s.questions.forEach(function (q, qi) {
+        html += '<div class="q"><label for="q-' + q.id + '"><span class="qn">' + (si + 1) + '.' + (qi + 1) + '</span><span class="qt">' +
+          (q.topic ? '<strong>' + esc(q.topic) + '</strong> ' : '') + esc(q.text) + '</span></label>' +
+          '<textarea id="q-' + q.id + '" data-id="' + q.id + '" rows="3" spellcheck="true"></textarea></div>';
+      });
+      html += '</section>';
+    });
+    $("sections").innerHTML = html;
+
+    var areas = document.querySelectorAll("#sections textarea");
+    Array.prototype.forEach.call(areas, function (ta) {
+      var id = ta.getAttribute("data-id");
+      if (state.a[id]) ta.value = state.a[id];
+      autoGrow(ta);
+      ta.addEventListener("input", function () {
+        state.a[id] = ta.value;
+        autoGrow(ta);
+        updateProgress();
+        schedulePersist();
+      });
+    });
+
+    ABOUT_FIELDS.forEach(function (f) {
+      var el = $(f.id);
+      if (f.type === "check") {
+        el.checked = !!state.about[f.key];
+        el.addEventListener("change", function () { state.about[f.key] = el.checked; schedulePersist(); });
+      } else {
+        el.value = state.about[f.key] || "";
+        el.addEventListener("input", function () { state.about[f.key] = el.value; schedulePersist(); });
+      }
+    });
+  }
+
+  function answeredCount() {
+    var n = 0;
+    SECTIONS.forEach(function (s) {
+      s.questions.forEach(function (q) {
+        if (state.a[q.id] && state.a[q.id].trim()) n++;
+      });
+    });
+    return n;
+  }
+  function updateProgress() {
+    var n = answeredCount();
+    $("progress-text").textContent = n + " of " + total + " answered";
+    $("meter-fill").style.width = (total ? (n / total * 100) : 0) + "%";
+  }
+
+  function buildText() {
+    var lines = [TITLE, ""];
+    var ab = state.about;
+    var aboutLines = [];
+    if (ab.name && ab.name.trim()) aboutLines.push("Name: " + ab.name.trim());
+    if (ab.city && ab.city.trim()) aboutLines.push("City: " + ab.city.trim());
+    var did = [];
+    if (ab.looked) did.push("looked for a room in a shared flat");
+    if (ab.chose) did.push("chose a new flatmate for a flat I already lived in");
+    if (did.length) aboutLines.push("I have: " + did.join("; "));
+    if (ab.contact && ab.contact.trim()) aboutLines.push("Contact: " + ab.contact.trim());
+    if (ab.ok) aboutLines.push("You may contact me later to show me a prototype: yes");
+    if (aboutLines.length) {
+      lines.push("ABOUT ME");
+      aboutLines.forEach(function (l) { lines.push(l); });
+      lines.push("");
+    }
+    var any = false;
+    SECTIONS.forEach(function (s, si) {
+      var block = [];
+      s.questions.forEach(function (q, qi) {
+        var a = state.a[q.id];
+        if (a && a.trim()) {
+          block.push((si + 1) + "." + (qi + 1) + " " + (q.topic ? q.topic + " " : "") + q.text);
+          block.push(a.trim());
+          block.push("");
+        }
+      });
+      if (block.length) {
+        any = true;
+        lines.push((si + 1) + ". " + s.title.toUpperCase());
+        lines.push("");
+        block.forEach(function (l) { lines.push(l); });
+      }
+    });
+    if (!any) return "";
+    return lines.join("\n").replace(/\s+$/, "") + "\n";
+  }
+
+  var statusTimer = null;
+  function say(msg) {
+    $("status").textContent = msg;
+    if (statusTimer) clearTimeout(statusTimer);
+    statusTimer = setTimeout(function () { $("status").textContent = ""; }, 8000);
+  }
+
+  function showPreview(t) {
+    $("preview").value = t;
+    $("preview-details").open = true;
+  }
+  function selectPreview() {
+    var p = $("preview");
+    try { p.focus(); p.select(); } catch (e) {}
+  }
+
+  $("preview-details").addEventListener("toggle", function () {
+    if ($("preview-details").open) $("preview").value = buildText();
+  });
+
+  $("btn-copy").addEventListener("click", function () {
+    var t = buildText();
+    if (!t) { say("Nothing to copy yet. Write an answer first."); return; }
+    var fallback = function () {
+      showPreview(t);
+      selectPreview();
+      say("Copying was blocked here. Select the text below and copy it.");
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t).then(function () {
+          say("Copied. Paste it into a message to the person who sent you this form.");
+        }, fallback);
+      } else { fallback(); }
+    } catch (e) { fallback(); }
+  });
+
+  var downloads = null;
+  $("btn-save").addEventListener("click", function () {
+    var t = buildText();
+    if (!t) { say("Nothing to save yet. Write an answer first."); return; }
+    if (!downloads) { say("Saving is not available here. Use Copy instead."); return; }
+    downloads.save({ filename: "my-flatmate-answers.txt", data: t }).then(function () {
+      say("Saved. Send the file to the person who shared this form.");
+    }, function (err) {
+      if (err && err.code === "declined") say("Save cancelled.");
+      else say("Saving is not available here. Use Copy instead.");
+    });
+  });
+
+  var clearArmed = false, clearTimer = null;
+  $("btn-clear").addEventListener("click", function () {
+    var btn = $("btn-clear");
+    if (!clearArmed) {
+      clearArmed = true;
+      btn.textContent = "Click again to delete everything";
+      clearTimer = setTimeout(function () { clearArmed = false; btn.textContent = "Clear all answers"; }, 5000);
+      return;
+    }
+    clearTimeout(clearTimer);
+    clearArmed = false;
+    btn.textContent = "Clear all answers";
+    state = { about: {}, a: {} };
+    persist();
+    render();
+    updateProgress();
+    $("preview").value = "";
+    say("All answers cleared.");
+  });
+
+  render();
+  updateProgress();
+  showSaveState();
+
+  try {
+    if (window.claude && typeof window.claude.use === "function") {
+      window.claude.use("downloads").then(function (d) {
+        if (d) { downloads = d; $("btn-save").hidden = false; }
+      }, function () {});
+    }
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>

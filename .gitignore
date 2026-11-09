@@ -1,0 +1,10 @@
+.env
+*.local
+.dart_tool/
+.flutter-plugins*
+build/
+*.iml
+.idea/
+.DS_Store
+supabase/.temp/
+supabase/.branches/
