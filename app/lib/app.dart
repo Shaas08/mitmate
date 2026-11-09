@@ -6,8 +6,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/locale.dart';
 import 'core/supabase.dart';
+import 'core/theme.dart';
 import 'features/auth/login_screen.dart';
+import 'features/onboarding/city_screen.dart';
+import 'features/onboarding/consent_screen.dart';
+import 'features/onboarding/verify_screen.dart';
 import 'features/preferences/preferences_screen.dart';
+import 'features/settings/settings_screen.dart';
 import 'features/profile/profile_screen.dart';
 import 'features/swipe/swipe_screen.dart';
 import 'l10n/app_localizations.dart';
@@ -17,16 +22,21 @@ final _router = GoRouter(
   refreshListenable: _AuthRefresh(),
   redirect: (context, state) {
     final signedIn = db.auth.currentSession != null;
-    final atLogin = state.matchedLocation == '/login';
-    if (!signedIn) return atLogin ? null : '/login';
-    if (atLogin) return '/';
+    final loc = state.matchedLocation;
+    final open = loc == '/login' || loc == '/verify';
+    if (!signedIn) return open ? null : '/login';
+    if (loc == '/login') return '/';
     return null;
   },
   routes: [
     GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-    GoRoute(path: '/', builder: (_, __) => const SwipeScreen()),
+    GoRoute(path: '/verify', builder: (_, state) => VerifyScreen(email: state.extra as String?)),
+    GoRoute(path: '/city', builder: (_, __) => const CityScreen()),
     GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
     GoRoute(path: '/preferences', builder: (_, __) => const PreferencesScreen()),
+    GoRoute(path: '/consent', builder: (_, __) => const ConsentScreen()),
+    GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
+    GoRoute(path: '/', builder: (_, __) => const SwipeScreen()),
   ],
 );
 
@@ -52,15 +62,7 @@ class MitmateApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: const Color(0xFF2F6F5E),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        colorSchemeSeed: const Color(0xFF2F6F5E),
-      ),
+      theme: buildTheme(),
       routerConfig: _router,
     );
   }

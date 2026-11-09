@@ -31,3 +31,9 @@ Not built yet: Apple and Google sign-in, phone verification, photo upload (stora
 - A match exists only when both people swiped yes and neither blocked the other.
 - Sensitive details are readable only by their owner.
 - Messages, rules, chores and expenses are visible only to the two people in a match.
+
+## Sprint 1 status (Stage 4)
+
+Screens ported from the approved design: welcome/login, verify, city, profile, preferences, consent, settings, swipe placeholder.
+Known gaps: phone verification is UI only (no SMS provider yet), photo upload, Apple/Google sign-in, tests.
+**Untested:** no Flutter SDK or Postgres was available when this was written. Run `flutter pub get && flutter gen-l10n && flutter analyze` first.
